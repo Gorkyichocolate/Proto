@@ -1,0 +1,67 @@
+name: Generate and push Go protobuf code
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GENERATED_REPO: github.com/Gorkyichocolate/ap2-generated.git
+  GENERATED_BRANCH: main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout contract repo
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23
+
+      - name: Install Protobuf compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
+      - name: Install Go protobuf generators
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Clone generated-code repo
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git clone https://x-access-token:${PAT_TOKEN}@${{ env.GENERATED_REPO }} generated-code
+
+      - name: Clean old generated files
+        run: |
+          find generated-code -name '*.pb.go' -delete
+
+      - name: Generate Go protobuf code
+        run: |
+          mkdir -p generated-code
+          find . -name '*.proto' -print0 | xargs -0 -n1 -I{} protoc -I. --go_out=paths=source_relative:generated-code --go-grpc_out=paths=source_relative:generated-code {}
+
+      - name: Commit and push generated code
+        run: |
+          cd generated-code
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No generated code changes to push."
+            exit 0
+          fi
+          git commit -m "Regenerate Go protobuf code from contract repo"
+          TAG="v$(date +'%Y.%m.%d.%H%M%S')"
+          git tag "$TAG"
+          git push origin HEAD:${{ env.GENERATED_BRANCH }} --follow-tags

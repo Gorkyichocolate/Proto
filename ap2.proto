@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package ap2.v1;
+
+option go_package = "github.com/Gorkyichocolate/ap2-generated/ap2/v1;ap2v1";
+
+import "google/protobuf/timestamp.proto";
+
+service PaymentService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}
+
+service OrderService {
+  rpc SubscribeToOrderUpdates(OrderRequest) returns (stream OrderStatusUpdate);
+}
+
+message PaymentRequest {
+  string order_id = 1;
+  int64 amount = 2;
+}
+
+message PaymentResponse {
+  string transaction_id = 1;
+  string status = 2;
+  google.protobuf.Timestamp processed_at = 3;
+}
+
+message OrderRequest {
+  string order_id = 1;
+}
+
+message OrderStatusUpdate {
+  string order_id = 1;
+  string status = 2;
+  string customer_id = 3;
+  string item_name = 4;
+  int64 amount = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
