@@ -45,7 +45,10 @@ jobs:
       - name: Clean old generated files
         run: |
           find generated-code -name '*.pb.go' -delete
-
+      - name: Debug proto files
+        run: |
+          echo "PROTO FILES:"
+          find . -name "*.proto"   
       - name: Generate Go protobuf code
         run: |
           mkdir -p generated-code
@@ -54,8 +57,7 @@ jobs:
             -I . \
             --go_out=paths=source_relative:generated-code \
             --go-grpc_out=paths=source_relative:generated-code \
-            $(find . -name "*.proto")
-
+            proto/ap2.proto
       - name: Commit and push generated code
         run: |
           cd generated-code
