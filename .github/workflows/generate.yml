@@ -49,7 +49,12 @@ jobs:
       - name: Generate Go protobuf code
         run: |
           mkdir -p generated-code
-          find . -name '*.proto' -print0 | xargs -0 -n1 -I{} protoc -I. --go_out=paths=source_relative:generated-code --go-grpc_out=paths=source_relative:generated-code {}
+
+          protoc \
+            -I . \
+            --go_out=paths=source_relative:generated-code \
+            --go-grpc_out=paths=source_relative:generated-code \
+            $(find . -name "*.proto")
 
       - name: Commit and push generated code
         run: |
