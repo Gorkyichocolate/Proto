@@ -67,7 +67,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # 🔥 ВАЖНО: обновляем remote с токеном
+          # 🔥 КЛЮЧЕВАЯ СТРОКА
           git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/Gorkyichocolate/ap2-generated.git
 
           git add .
