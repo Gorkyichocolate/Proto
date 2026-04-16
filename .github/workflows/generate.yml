@@ -59,16 +59,27 @@ jobs:
             --go-grpc_out=paths=source_relative:generated-code \
             proto/ap2.proto
       - name: Commit and push generated code
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd generated-code
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 🔥 ВАЖНО: обновляем remote с токеном
+          git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/Gorkyichocolate/ap2-generated.git
+
           git add .
+
           if git diff --cached --quiet; then
-            echo "No generated code changes to push."
+            echo "No changes"
             exit 0
           fi
-          git commit -m "Regenerate Go protobuf code from contract repo"
+
+          git commit -m "Regenerate Go protobuf code"
+
           TAG="v$(date +'%Y.%m.%d.%H%M%S')"
           git tag "$TAG"
-          git push origin HEAD:${{ env.GENERATED_BRANCH }} --follow-tags
+
+          git push origin HEAD:main --follow-tags
