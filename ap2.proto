@@ -10,8 +10,21 @@ service PaymentService {
   rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
 }
 
+service PaymentsService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+  rpc ListPayments(ListPaymentsRequests) returns (ListPaymentsResponse);
+}
+
 service OrderService {
   rpc SubscribeToOrderUpdates(OrderRequest) returns (stream OrderStatusUpdate);
+}
+
+message ListPaymentsRequests {
+  string status = 1;
+}
+
+message ListPaymentsResponse {
+  repeated PaymentResponse payments = 1;
 }
 
 message PaymentRequest {
